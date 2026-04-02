@@ -2,55 +2,34 @@
 
 ## 📋 Descrição do Projeto
 
-Este projeto implementa uma **arquitetura completa de Big Data** para processamento de Notas Fiscais Eletrônicas (NF-e) utilizando:
+Pipeline completo de processamento de Notas Fiscais Eletrônicas (NF-e) utilizando:
 
 - **Apache Spark** para processamento de dados
 - **Apache Kafka** para streaming de mensagens
-- **Apache Airflow** para orquestração de pipelines
-- **Apache Hive** para armazenamento e análise
-- **Docker Compose** para containerização da infraestrutura
+- **Apache Airflow** para orquestração
+- **Docker Compose** para infraestrutura
 
 ---
 
 ## 🏗️ Arquitetura
 
 \\\
-┌─────────────────┐
-│   XMLs NF-e     │  (100 arquivos)
-│  (pasta xmls/)  │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────────────────┐
-│  DAG 1 - Airflow            │
-│  spark_xml_to_kafka.py      │
-│  (Lê XMLs → JSON → Kafka)   │
-└────────┬────────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Apache Kafka   │  (Tópico: nfe-events)
-│  (Streaming)    │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────────────────┐
-│  DAG 2 - Airflow            │
-│  spark_kafka_to_hive.py     │
-│  (Consome Kafka → Persiste) │
-└────────┬────────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│  Apache Hive    │  (Tabela: nfe_events)
-│  (Warehouse)    │
-└────────┬────────┘
-         │
-         ▼
-┌─────────────────────────────┐
-│  Consultas SQL Analíticas   │
-│  (queries/analytics.sql)    │
-└─────────────────────────────┘
+XMLs (100 arquivos)
+        │
+        ▼
+DAG 1: Spark XML → JSON → Kafka
+        │
+        ▼
+Kafka (Tópico: nfe-events)
+        │
+        ▼
+DAG 2: Spark Kafka → Hive
+        │
+        ▼
+Hive (Tabela: nfe_events)
+        │
+        ▼
+Consultas SQL Analíticas
 \\\
 
 ---
@@ -60,189 +39,103 @@ Este projeto implementa uma **arquitetura completa de Big Data** para processame
 \\\
 teste_engenheiro_economia/
 ├── docker/
-│   ├── docker-compose.yml          ✅ Infraestrutura
+│   ├── docker-compose.yml
 │   └── scripts/
-│       ├── spark_xml_to_kafka.py   ✅ Script Spark 1
-│       └── spark_kafka_to_hive.py  ✅ Script Spark 2
+│       ├── spark_xml_to_kafka.py
+│       └── spark_kafka_to_hive.py
 ├── airflow/
 │   └── dags/
-│       ├── dag1_xml_to_kafka.py    ✅ DAG 1 Airflow
-│       └── dag2_kafka_to_hive.py   ✅ DAG 2 Airflow
+│       ├── dag1_xml_to_kafka.py
+│       └── dag2_kafka_to_hive.py
 ├── queries/
-│   └── analytics.sql               ✅ Consultas SQL
+│   └── analytics.sql
 ├── evidencias/
-│   ├── dag1_sucesso.png           ✅ Print DAG 1
-│   ├── dag2_sucesso.png           ✅ Print DAG 2
-│   └── dags_ativas.png            ✅ Print DAGs Ativas
-├── xmls/
-│   ├── nfe_001.xml
-│   ├── nfe_002.xml
-│   └── ... (100 arquivos)
-├── README.md                       ✅ Este arquivo
-└── .gitignore
+│   ├── dag1_sucesso.png
+│   ├── dag2_sucesso.png
+│   └── dags_ativas.png
+├── xmls/ (100 arquivos NF-e)
+└── README.md
 \\\
 
 ---
 
 ## 🚀 Como Executar
 
-### **Pré-requisitos**
-
+### Pré-requisitos
 - Windows 10/11
-- Docker Desktop instalado e rodando
+- Docker Desktop
 - Git
 - PowerShell
 
-### **Passo 1: Clonar o Repositório**
+### Passos
 
+1. **Clonar repositório**
 \\\powershell
 git clone https://github.com/faramirbh/teste_engenheiro_economia.git
 cd teste_engenheiro_economia
 \\\
 
-### **Passo 2: Iniciar a Infraestrutura**
-
+2. **Iniciar infraestrutura**
 \\\powershell
 cd docker
 docker compose up -d
 \\\
 
-Aguarde 2-3 minutos para todos os containers iniciarem.
-
-### **Passo 3: Acessar o Airflow**
-
-Abra o navegador e vá para:
-
+3. **Acessar Airflow**
 \\\
 http://localhost:8888
+Usuário: admin
+Senha: admin
 \\\
 
-**Credenciais:**
-- Usuário: dmin
-- Senha: dmin
-
-### **Passo 4: Executar as DAGs**
-
-1. **Ativar DAG 1**: Clique no toggle de dag1_xml_to_kafka (deve ficar azul)
-2. **Disparar DAG 1**: Clique no botão play (▶️) em "Actions"
-3. **Aguardar conclusão**: Veja o Grid ficar VERDE
-4. **Ativar DAG 2**: Clique no toggle de dag2_kafka_to_hive
-5. **Disparar DAG 2**: Clique no botão play
-6. **Aguardar conclusão**: Veja o Grid ficar VERDE
+4. **Executar DAGs**
+   - Ativar toggle de dag1_xml_to_kafka (azul)
+   - Clique no play (▶️)
+   - Aguarde ficar VERDE
+   - Repita para dag2_kafka_to_hive
 
 ---
 
-## 📊 Resultados Obtidos
+## 📊 Resultados
 
-### **DAG 1 - XML → Kafka**
-- ✅ **Status**: SUCESSO
-- 📊 **Arquivos Processados**: 100 XMLs
-- ⏱️ **Tempo de Execução**: ~24 segundos
-- 📤 **Mensagens Enviadas ao Kafka**: 100 NFes
-
-### **DAG 2 - Kafka → Hive**
-- ✅ **Status**: SUCESSO
-- 📊 **Registros Consumidos**: 100 NFes
-- ⏱️ **Tempo de Execução**: ~24 segundos
-- 💾 **Dados Persistidos**: Tabela 
-fe_events criada
-
-### **Análise dos Dados**
-
-A tabela 
-fe_events contém:
-- **Total de NFes**: 100
-- **Valor Total**: R$ 9.553,23
-- **Valor Médio**: R$ 95,53
-- **Emitentes**: Diversos supermercados e mercadinhos
-- **Período**: 2019-2026
+| Métrica | Valor |
+|---------|-------|
+| NFes Processadas | 100 |
+| Valor Total | R$ 9.553,23 |
+| DAG 1 Status | ✅ SUCESSO |
+| DAG 2 Status | ✅ SUCESSO |
+| Tempo Total | ~50 segundos |
 
 ---
 
-## 🔍 Consultas SQL Incluídas
+## 🔍 Consultas SQL
 
-O arquivo queries/analytics.sql contém 7 consultas analíticas:
+O arquivo \queries/analytics.sql\ contém:
 
-1. **Contagem Total de NFes**: Número total de documentos processados
-2. **Análise de Valores**: Soma, média, mín e máx dos valores
-3. **Top 10 Emitentes**: Emitentes com maior volume de vendas
-4. **Análise por Data**: NFes agrupadas por data de emissão
-5. **Top 10 Destinatários**: Destinatários que mais receberam NFes
-6. **Distribuição por Range**: Agrupamento de valores em faixas
-7. **Resumo Executivo**: KPIs principais consolidados
-
----
-
-## 🛠️ Tecnologias Utilizadas
-
-| Tecnologia | Versão | Função |
-|-----------|--------|--------|
-| Docker | 29.3.1 | Containerização |
-| Apache Spark | 3.x | Processamento distribuído |
-| Apache Kafka | 5.5.0 | Streaming de mensagens |
-| Apache Airflow | 2.8.0 | Orquestração de workflows |
-| PostgreSQL | 13 | Banco de dados do Airflow |
-| Python | 3.9+ | Linguagem de programação |
-| Zookeeper | 5.5.0 | Coordenação do Kafka |
+1. Contagem total de NFes
+2. Análise de valores (soma, média, mín, máx)
+3. Top 10 emitentes
+4. Análise por data de emissão
+5. Top 10 destinatários
+6. Distribuição por faixas de valor
+7. Resumo executivo com KPIs
 
 ---
 
-## 📈 Performance
+## 🛠️ Tecnologias
 
-- **XML → JSON (Spark)**: ~24 segundos para 100 arquivos
-- **Kafka Publishing**: Imediato (~100 mensagens/segundo)
-- **Kafka → Hive (Spark)**: ~24 segundos para 100 registros
-- **Pipeline Completo**: ~50 segundos end-to-end
-
----
-
-## 📋 Checklist de Entrega
-
-- ✅ Infraestrutura Docker com todos os serviços
-- ✅ Script Spark 1: XML → Kafka (100 NFes processadas)
-- ✅ Script Spark 2: Kafka → Hive (100 NFes persistidas)
-- ✅ DAG 1 Airflow: Orquestração do pipeline XML-Kafka
-- ✅ DAG 2 Airflow: Orquestração do pipeline Kafka-Hive
-- ✅ Consultas SQL analíticas no Hive
-- ✅ Evidências de execução (prints/logs)
-- ✅ Repositório Git com histórico completo
-- ✅ README documentação
+- Docker 29.3.1
+- Apache Spark 3.x
+- Apache Kafka 5.5.0
+- Apache Airflow 2.8.0
+- PostgreSQL 13
+- Python 3.9+
+- Zookeeper 5.5.0
 
 ---
 
-## 📧 Instruções de Entrega
+## 👨‍💻 Autor
 
-Enviar para: **wsmarques@minsait.com**
-
-**Conteúdo do Email:**
-1. Link do repositório GitHub forkado
-2. Currículo (PDF)
-3. Breve descrição da solução implementada
-
-**Repositório:** https://github.com/faramirbh/teste_engenheiro_economia
-
----
-
-## 👨‍💻 Desenvolvedor
-
-- **Nome**: Henrique Augusto Manger
-- **Email**: henriquemanger@gmail.com
-- **Data**: Abril de 2026
-
----
-
-## 📞 Suporte
-
-Para dúvidas sobre a solução, entre em contato através do email acima.
-
----
-
-## 📜 Licença
-
-Este projeto foi desenvolvido como solução para o processo seletivo da Indra Group.
-
----
-
-## 🙏 Agradecimentos
-
-Agradeço à Indra Group pela oportunidade de demonstrar conhecimento em arquitetura de dados e Big Data.
+**Henrique Augusto Manger**
+henriquemanger@gmail.com
+Abril de 2026
